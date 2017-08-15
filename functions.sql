@@ -15,7 +15,8 @@ RETURNS table_info AS $$
     LIMIT limit_value;
 $$ LANGUAGE sql;
 
---Allows for checking if a bitstring has a specific bit set. Bit position is counted from the left
+-- Allows for checking if a bitstring has a specific bit set. Bit position is counted from the left
+-- Can be used on a bitstring of any length. 
 -- Can be called by `bit_field &>> 3` or `has_bit(bit_field, 3)`
 CREATE FUNCTION has_bit (a bit varying, b integer) 
 RETURNS boolean AS $$ 
