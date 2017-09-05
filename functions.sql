@@ -1,9 +1,8 @@
 -- Allows for finding the tables with the highest memory usage
 -- Can be called by `select * from top_tables_by_memory(10)`
 
-CREATE TYPE table_info AS (relation text, total_size text);
 CREATE FUNCTION top_tables_by_memory (limit_value integer) 
-RETURNS table_info AS $$
+RETURNS TABLE (relation text, total_size text) AS $$
   SELECT nspname || '.' || relname AS "relation",
       pg_size_pretty(pg_total_relation_size(C.oid)) AS "total_size"
     FROM pg_class C
