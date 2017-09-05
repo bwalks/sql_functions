@@ -13,11 +13,26 @@ CREATE FUNCTION top_tables_by_memory (limit_value integer default 20, OUT relati
     LIMIT limit_value;
 $$ LANGUAGE sql;
 
+
 -- Allows for checking if a bitstring has a specific bit set. Bit position is counted from the left
 -- Can be used on a bitstring of any length. 
--- Can be called by `bit_field &>> 3` or `has_bit(bit_field, 3)`
-CREATE FUNCTION has_bit (a bit varying, b integer) 
+-- Returns false if checking for a bit at a position greater than the left of the bitstring
+-- Can be called by `bit_field &>> 3` or `has_bit_from_left(bit_field, 3)`
+
+CREATE FUNCTION has_bit_from_left (a bit varying, b integer) 
 RETURNS boolean AS $$ 
   SELECT (b < bit_length(a)) AND ((a & (repeat('0', b) || '1' || repeat('0', bit_length(a) - (b + 1)))::bit varying) != repeat('0', bit_length(a))::bit varying);
 $$ LANGUAGE sql;
-CREATE OPERATOR &>> (leftarg = bit varying, rightarg = integer, procedure = has_bit);
+CREATE OPERATOR &>> (leftarg = bit varying, rightarg = integer, procedure = has_bit_from_left);
+
+
+-- Allows for checking if a bitstring has a specific bit set. Bit position is counted from the left
+-- Can be used on a bitstring of any length. 
+-- Returns false if checking for a bit at a position greater than the left of the bitstring
+-- Can be called by `bit_field &<< 3` or `has_bit_from_right(bit_field, 3)`
+
+CREATE FUNCTION has_bit_from_right (a bit varying, b integer) 
+RETURNS boolean AS $$ 
+  SELECT (b < bit_length(a)) AND ((a & (repeat('0', bit_length(a) - (b + 1)) || '1' || repeat('0', b))::bit varying) != repeat('0', bit_length(a))::bit varying);
+$$ LANGUAGE sql;
+CREATE OPERATOR &<< (leftarg = bit varying, rightarg = integer, procedure = has_bit_from_right);
